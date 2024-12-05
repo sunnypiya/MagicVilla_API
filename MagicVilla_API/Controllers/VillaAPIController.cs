@@ -42,9 +42,14 @@ namespace MagicVilla_API.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public ActionResult<VillaDTO> CreateVill([FromBody] VillaDTO villa)
         {
-            if (!ModelState.IsValid)
+            //if (!ModelState.IsValid)
+            //{
+            //    BadRequest(ModelState);
+            //}
+            if(VillaStore.villsList.FirstOrDefault(v => v.Name.ToLower() == villa.Name.ToLower()) != null)
             {
-                BadRequest(ModelState);
+                ModelState.AddModelError("CustomError", "Villa Name Already Exists!");
+                return BadRequest(ModelState);
             }
             if (villa == null)
             {
