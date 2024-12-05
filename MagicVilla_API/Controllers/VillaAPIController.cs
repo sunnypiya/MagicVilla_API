@@ -2,6 +2,7 @@
 using MagicVilla_API.Models;
 using MagicVilla_API.Models.DTO;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
 
 namespace MagicVilla_API.Controllers
@@ -101,10 +102,30 @@ namespace MagicVilla_API.Controllers
             villa.Occupancy = villaDTO.Occupancy;
             villa.Sqft = villaDTO.Sqft;
 
-
             return NoContent();
+        }
+        [HttpPatch("{id:int}", Name = "UpdatePartialVilla")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public ActionResult<VillaDTO> UpdatePartialVilla(int id, [FromBody] JsonPatchDocument<VillaDTO> patchDTO)
+        {
+            if (patchDTO == null || id == 0)
+            {
+                return BadRequest(patchDTO);
+            }
+            var villa = VillaStore.villsList.FirstOrDefault(v => v.Id == id);
 
+            if (villa == null)
+            {
+                return NotFound(patchDTO);
+            }
 
+            patchDTO.ApplyTo(villa,ModelState);
+            if (!ModelState.IsValid) {
+                return BadRequest(ModelState);
+            }
+            
+            return NoContent();
         }
     }
 }
